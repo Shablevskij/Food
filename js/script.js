@@ -132,7 +132,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
                     modal.addEventListener('click', (e)=>{
 
-                        if(e.target === modal || e.target.getAttribute('data-close')==''){
+                        if(e.target === modal || e.target.getAttribute('data-close') == ''){
                             closeModal();
 
                         }
@@ -219,115 +219,91 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
                     // forms
 
+                    
+    const forms = document.querySelectorAll('form');
+    const message = {
+        loading: 'img/form/spinner.svg',
+        succsess: 'Спасибо! Скоро с Вами свяжемся!',
+        failure: 'Что-то пошло не так...'
+    }
 
-                    const forms = document.querySelectorAll('form');
+    forms.forEach(item =>{
+        postData(item);
+    })
 
-                    const message = {
-                        loading: 'img/form/spinner.svg',
-                        sucses: 'Thanks!) we will call you',
-                        failure: 'Wrong sorry',
-                    };
+    function postData(form){
+        form.addEventListener('submit', (e)=>{
 
-                    forms.forEach(item =>{
+            e.preventDefault();
 
-                        postData(item);
+            const statusMessage = document.createElement('img');
+            statusMessage.src = message.loading;
+            statusMessage.style.cssText = `
+            display: block;
+            margin: 0 auto;
+            `;
+            form.append(statusMessage);
 
-                    });
+            const request = new XMLHttpRequest();
 
-                    function postData(form){
-                        form.addEventListener('submit', (e)=>{
-                            e.preventDefault();
+            request.open('POST', 'server.php');
 
-                            const statusMasage = document.createElement('img');
-                            statusMasage.src = message.loading;
-                            statusMasage.style.cssText = `
-                            display: block;
-                            margin: 0 auto;
-                            `;
-                            form.append(statusMasage);
-                          
-                            closeModal();
+            request.setRequestHeader('Content-type', 'application/json');
+            const formData = new FormData(form);
 
-
-                            // const request = new XMLHttpRequest();
-                            // request.open('POST', 'server.php');
-                           
-
-                            // request.setRequestHeader('Content-type', 'application/json');
-                            const formData = new FormData(form);
-
-                            const object = {};
-                            formData.forEach(function(value,key){
-                                object[key] = value;
-                            });
-                            
-
-                            fetch('server.php',{
-                                method:"POST",
-                                headers:{
-                                    'Content-type': 'aplication/json'
-                                },
-                                body:JSON.stringify(object)
-                            })
-                            .then(data => data.text())
-                            .then(data => {
-
-                                        console.log(data);    
-                                         showThanksModal(message.sucses);
-                                        form.reset()
-                                        statusMasage.remove();
-                            }).catch(()=>{
-                                showThanksModal(message.failure);
-                            }).finally(()=>{
-                                form.reset();
-                            })
-
-                            // request.send(formData);
-                            // request.addEventListener('load',()=>{
-                            //     if(request.status === 200){
-                            //         console.log(request.response);
-                                    
-                            //          showThanksModal(message.sucses);
-                            //         form.reset();
-                                
-                            //             statusMasage.remove();
-                                    
-                            //     }else{
-                            //         showThanksModal(message.failure);
-                            //     }
-                            // });
-                        });
-                    }
-
-                    function showThanksModal(message){
-                        const prevModalDialog = document.querySelector('.modal__dialog');
-                        
-                        prevModalDialog.classList.add('hide');
-                        openModal();
-
-                        
-                        
-
-                        const thanksModal = document.createElement('div');
-                        thanksModal.classList.add('modal__dialog');
-                        thanksModal.innerHTML = `
-                        <div class="modal__content">
-                        <div class="modal__close" data-close >&times;</div>
-                        <div class="modal__title">${message}</div>
-
-                        </div>
-                        `;
-                        document.querySelector('.modal').append(thanksModal);
-                        setTimeout(()=>{
-                            thanksModal.remove();
-                            prevModalDialog.classList.add('show');
-                            prevModalDialog.classList.remove('hide');
-                           
-                            
-                            closeModal();
-                        },2000);
-                    }
+            const object = {};
+            formData.forEach(function(value,key){
+                object[key] = value;
+            });
+            const json = JSON.stringify(object);
           
+
+            request.send(json);
+            request.addEventListener('load', ()=>{
+                if(request.status === 200){
+                    console.log(request.response);
+                    showThanksModal(message.succsess);
+                    form.reset();
+                    setTimeout(()=>{
+                        statusMessage.remove();
+                    },2000);
+                } else {
+                    showThanksModal(message.failure);
+
+                }
+            })
+
+        });
+    }
+
+    function showThanksModal(message){
+        const prevModalDialog = document.querySelector('.modal__dialog');
+
+        prevModalDialog.classList.add('hide');
+        openModal();
+
+        const thanksModal = document.createElement('div');
+        thanksModal.classList.add('modal__dialog');
+        thanksModal.innerHTML = `
+        <div class="modal__content">
+
+        <div class="modal__close" data-close>x</div>
+        <div class="modal__title">${message}</div>
+
+        </div>
+        `;
+
+        document.querySelector('.modal').append(thanksModal);
+        setTimeout(()=>{
+
+            thanksModal.remove();
+            prevModalDialog.classList.add('show');
+            prevModalDialog.classList.remove('hide');
+            closeModal();
+
+        },4000);
+    }
+
 
 
 });
